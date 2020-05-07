@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 
 const Toggle = () => {
+  const [role, setRole] = useState("company");
+
   const toggleRole = () => {
     const currentRole = localStorage.getItem("role");
     const newRole = currentRole === "company" ? "candidate" : "company";
     localStorage.setItem("role", newRole);
+    setRole(newRole);
   };
 
   return (
@@ -12,7 +15,7 @@ const Toggle = () => {
       <button onClick={toggleRole}>Toggle</button>
       <br />
       <br />
-      <div>Current role is {localStorage.getItem("role")}</div>
+      <div>Current role is {role}</div>
     </div>
   );
 };

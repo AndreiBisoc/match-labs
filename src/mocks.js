@@ -48,18 +48,12 @@ export const technologies = [
 ];
 
 export const EDIT_CANDIDATE_FIELDS = [
-  {
-    name: "description",
-    value: "Software engineer",
-  },
+  { name: "description", value: "Software engineer" },
   { name: "email", value: "paul.macinic@e-spres-oh.com" },
   { name: "first_name", value: "Paul" },
   { name: "last_name", value: "Macinic" },
   { name: "phone", value: "0771466059" },
-  {
-    name: "profile_image",
-    value: "https://obscurial.dk/match-labs/paul.jpg",
-  },
+  { name: "profile_image", value: "https://obscurial.dk/match-labs/paul.jpg"},
 ];
 
 export const CREATE_CANDIDATE_FIELDS = [
