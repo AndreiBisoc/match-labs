@@ -5,8 +5,7 @@ import {EDIT_CANDIDATE_FIELDS as inputData} from '../mocks'
 
 const Account = () => {
 
-    const handleSubmitButton = (e, formResult) => {
-        e.preventDefault();
+    const handleSubmitButton = (formResult) => {
         console.log(formResult);
     };
 

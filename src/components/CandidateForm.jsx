@@ -2,43 +2,41 @@ import React, { useState } from 'react'
 import styles from './CandidateForm.module.css'
 
 const CandidateForm = (props) => {
-    let defaultState = Object.assign({}, ...props.inputData.map(input => {
-        const {value, name} = input;
-        return {
-            [name]: value
-        }
-    }));
-    const [state, setState] = useState(defaultState);
+    const [state, setState] = useState(props.inputData);
 
     const handleOnChange = (e) => {
-        e.preventDefault();
-        const {name, value} = e.target;
-        setState(prevState => {
-            return {
-                ...prevState,
-                [name]: value
-            }
-        });
+        const newState = [...state];
+        const index = newState.findIndex((value) => value.name === e.target.name);
+        newState[index].value = e.target.value;
+        setState(newState);
     };
 
-    const formInputs = props.inputData.map(input => {
-        const {name, placeholder} = input;
+    const renderFormInputs = props.inputData.map(input => {
         return (    
             <input
-                key={name}
+                key={input.name}
                 type="text"
-                name={name}
-                value={`${state[name]}`}
-                placeholder={placeholder}
+                name={input.name}
+                value={input.value}
+                placeholder={input.placeholder || ''}
                 onChange={(e) => handleOnChange(e)}
                 />
         )   
     });
     
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const obj = {};
+        state.forEach((item) => {
+          obj[item.name] = item.value;
+        });
+        props.handleSubmitButton(obj);
+    }
+
     return (
         <form className={`${styles.form} ${styles.field}`}>
-            {formInputs}
-            <input type="submit" value="Submit" onClick={(e) => props.handleSubmitButton(e, state)}/>
+            {renderFormInputs}
+            <input type="submit" value="Submit" onClick={(e) => handleSubmit(e)}/>
         </form>
     )
 }
