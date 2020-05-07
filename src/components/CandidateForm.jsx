@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
 import styles from "./CandidateForm.module.css";
 import Button from "./Button";
+import { AppContext } from "../Context";
 
 const CandidateForm = ({ fields, onSubmit }) => {
+  const appContext = useContext(AppContext);
   const [values, setValues] = useState(fields);
 
   const onChange = (e) => {
@@ -19,7 +21,7 @@ const CandidateForm = ({ fields, onSubmit }) => {
     values.forEach((item) => {
       obj[item.name] = item.value;
     });
-    onSubmit(obj);
+    onSubmit(obj, appContext.user.id);
   };
 
   return (
