@@ -4,10 +4,11 @@ import { CREATE_CANDIDATE_FIELDS } from "../mocks";
 import PageTitle from "../components/PageTitle";
 import { register, assignRole } from "../utils/request";
 import Loader from "../components/Loader";
+import ChooseRole from "../components/ChooseRole";
 
 const Register = () => {
   const [isLoading, setIsLoading] = useState(null);
-
+  const [role, setRole] = useState(null);
   const onFormSubmit = async (values) => {
     setIsLoading(true);
     const { email, password, ...rest } = values;
@@ -21,10 +22,12 @@ const Register = () => {
   };
 
   const assignUserRole = async (email, values) => {
-    const account = await assignRole({ email, ...values });
+    const account = await assignRole({ email, ...values, role });
   };
 
   if (isLoading) return <Loader />;
+
+  if (!role) return <ChooseRole setRole={setRole} />;
 
   return (
     <>
@@ -34,6 +37,7 @@ const Register = () => {
       <CandidateForm
         onSubmit={onFormSubmit}
         fields={CREATE_CANDIDATE_FIELDS}
+        role = {role}
       ></CandidateForm>
     </>
   );

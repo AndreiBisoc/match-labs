@@ -6,17 +6,19 @@ import Loader from "./Loader";
 import Select from "react-select";
 import { fetchTechnologies } from "../utils/request";
 
-const CandidateForm = ({ fields, onSubmit }) => {
+const CandidateForm = ({ fields, onSubmit, role }) => {
   const [values, setValues] = useState(fields);
   const [technologies, setTechnologies] = useState(null);
 
   useEffect(() => {
     const onMount = async () => {
-      const technologies = await fetchTechnologies();
-      setTechnologies(technologies);
+      if (role === "candidate") {
+        const technologies = await fetchTechnologies();
+        setTechnologies(technologies);
+      }
     };
     onMount();
-  }, []);
+  }, [role]);
 
   const onChange = (e) => {
     const newValues = [...values];
@@ -48,6 +50,26 @@ const CandidateForm = ({ fields, onSubmit }) => {
   };
 
   if (!values) return <Loader></Loader>;
+  
+  const select = role === "candidate" && (
+    <Select
+      name={"technologies"}
+      onChange={onSelectChange}
+      isMulti
+      options={technologies}
+      placeholder={"Technologies"}
+      styles={{
+        control: () => ({
+          padding: "0.6rem 0 0.7rem 0.5rem",
+          display: "flex",
+          borderRadius: ".3rem",
+          border: "0.1rem solid #ebebeb",
+          fontSize: "1.1rem",
+          marginBottom: "1.6rem",
+        }),
+      }}
+    />
+  );
 
   return (
     <>
@@ -66,24 +88,8 @@ const CandidateForm = ({ fields, onSubmit }) => {
               </div>
             )
         )}
-        <Select
-          name={"technologies"}
-          onChange={onSelectChange}
-          isMulti
-          options={technologies}
-          placeholder={"Technologies"}
-          styles={{
-            control: () => ({
-              padding: "0.6rem 0 0.7rem 0.5rem",
-              display: "flex",
-              borderRadius: ".3rem",
-              border: "0.1rem solid #ebebeb",
-              fontSize: "1.1rem",
-              marginBottom: "1.6rem",
-            }),
-          }}
-        />
 
+        {select}
         <Button type={"submit"} variant={"secondary"} size={"medium"}>
           Submit
         </Button>
