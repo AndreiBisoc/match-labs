@@ -1,44 +1,49 @@
-import React, { useState } from 'react'
-import styles from './CandidateForm.module.css'
+import React, { useState, useContext } from "react";
 
-const CandidateForm = (props) => {
-    const [state, setState] = useState(props.inputData);
+import styles from "./CandidateForm.module.css";
+import Button from "./Button";
+import { AppContext } from "../Context";
 
-    const handleOnChange = (e) => {
-        const newState = [...state];
-        const index = newState.findIndex((value) => value.name === e.target.name);
-        newState[index].value = e.target.value;
-        setState(newState);
-    };
+const CandidateForm = ({ fields, onSubmit }) => {
+  const appContext = useContext(AppContext);
+  const [values, setValues] = useState(fields);
 
-    const renderFormInputs = props.inputData.map(input => {
-        return (    
-            <input
-                key={input.name}
-                type="text"
-                name={input.name}
-                value={input.value}
-                placeholder={input.placeholder || ''}
-                onChange={(e) => handleOnChange(e)}
-                />
-        )   
+  const onChange = (e) => {
+    const newValues = [...values];
+    const index = newValues.findIndex((value) => value.name === e.target.name);
+    newValues[index].value = e.target.value;
+    setValues(newValues);
+  };
+
+  const formHandler = (e) => {
+    e.preventDefault();
+    const obj = {};
+    values.forEach((item) => {
+      obj[item.name] = item.value;
     });
-    
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const obj = {};
-        state.forEach((item) => {
-          obj[item.name] = item.value;
-        });
-        props.handleSubmitButton(obj);
-    }
+    onSubmit(obj, appContext.user.id);
+  };
 
-    return (
-        <form className={`${styles.form} ${styles.field}`}>
-            {renderFormInputs}
-            <input type="submit" value="Submit" onClick={(e) => handleSubmit(e)}/>
-        </form>
-    )
-}
+  return (
+    <>
+      <form onSubmit={(e) => formHandler(e)} className={styles.form}>
+        {values.map((field) => (
+          <div key={field.name} className={styles.field}>
+            <input
+              required
+              onChange={onChange}
+              value={field.value}
+              placeholder={field.placeholder || ""}
+              name={field.name}
+            ></input>
+          </div>
+        ))}
+        <Button type={"submit"} variant={"secondary"} size={"medium"}>
+          Submit
+        </Button>
+      </form>
+    </>
+  );
+};
 
 export default CandidateForm;

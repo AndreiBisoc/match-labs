@@ -15,6 +15,50 @@ const format = (data) => {
       };
 };
 
+const formatMe = (data) =>
+  data.matcher_type === "Candidate"
+    ? {
+        role: data.matcher_type.toLowerCase(),
+        id: data.matcher_id,
+        personal: {
+          first_name: data.matcher.first_name,
+          last_name: data.matcher.last_name,
+          email: data.matcher.email,
+          description: data.matcher.description,
+          phone: data.matcher.phone,
+          profile_image: data.matcher.profile_image,
+        },
+      }
+    : {
+        role: data.matcher_type.toLowerCase(),
+        id: data.matcher_id,
+        personal: {
+          name: data.matcher.name,
+          email: data.matcher.email,
+          description: data.matcher.description,
+          phone: data.matcher.phone,
+          profile_image: data.matcher.profile_image,
+        },
+      };
+
+const config = {
+  setAuthToken: (res) => {
+    const token = res.headers.entries().next().value[1];
+    localStorage.setItem("token", token);
+  },
+  get authorization() {
+    return {
+      Authorization: localStorage.getItem("token"),
+    };
+  },
+  get headers() {
+    return {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+  },
+};
+
 export const fetchMatches = async () => {
   const url = role === "company" ? `${baseUrl}/candidates` : `${baseUrl}/labs`;
 
@@ -104,3 +148,79 @@ export const fetchLikes = () => {
 
   return data;
 };
+
+export const register = async (data) => {
+  const res = await fetch(`https://match-labs-api.herokuapp.com/api/users`, {
+    method: "POST",
+    headers: config.headers,
+    body: JSON.stringify({ user: data }),
+  }).catch((e) => {
+    console.log(e);
+  });
+
+  config.setAuthToken(res);
+
+  const json = await res.json();
+  return json;
+};
+
+export const assignRole = async (data) => {
+  const res = await fetch(
+    `https://match-labs-api.herokuapp.com/api/candidates`,
+    {
+      method: "POST",
+      headers: { ...config.headers, ...config.authorization },
+      body: JSON.stringify(data),
+    }
+  ).catch((e) => console.log(e));
+
+  const json = await res.json();
+  return json;
+};
+
+export const login = async (data) => {
+  const res = await fetch(
+    `https://match-labs-api.herokuapp.com/api/users/sign_in`,
+    {
+      method: "POST",
+      headers: { ...config.authorization, ...config.headers },
+      body: JSON.stringify({
+        user: data,
+      }),
+    }
+  );
+
+  config.setAuthToken(res);
+
+  const json = await res.json();
+  return json;
+};
+
+export const logout = async (data) => {
+  await fetch(`https://match-labs-api.herokuapp.com/api/users/sign_out`, {
+    method: "DELETE",
+    headers: { ...config.authorization, ...config.headers },
+  }).catch((e) => console.log(e));
+};
+
+export const me = async (data) => {
+  const res = await fetch(`https://match-labs-api.herokuapp.com/api/me`, {
+    method: "GET",
+    headers: { ...config.authorization, ...config.headers },
+  }).catch((e) => console.log(e));
+
+  const json = await res.json();
+
+  return json.error ? false : formatMe(json);
+};
+
+export const editCandidate = async (data, id) => {
+  const res = await fetch(`https://match-labs-api.herokuapp.com/api/candidates/` + id, {
+    method: "PUT",
+    headers: { ...config.authorization, ...config.headers },
+    body: JSON.stringify({ candidate: data }),
+  }).catch((e) => console.log(e));
+
+  const json = await res.json();
+  return json;
+}
