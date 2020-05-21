@@ -1,4 +1,4 @@
-const baseUrl = "https://match-labs-api.herokuapp.com/api/no_auth";
+const baseUrl = "https://match-labs-api.herokuapp.com/api";
 
 const role = localStorage.getItem("role");
 
@@ -41,6 +41,28 @@ const formatMe = (data) =>
         },
       };
 
+const formatMatch = (data) => {
+  return role === "candidate"
+    ? {
+        id: data.lab.id,
+        name: data.lab.name,
+        profile_image: "data.lab.company.profile_image",
+      }
+    : {
+        id: data.candidate.id,
+        name: `${data.candidate.first_name} ${data.candidate.last_name}`,
+        profile_image: data.candidate.profile_image,
+        technologies: data.candidate.technologies,
+      };
+};
+
+function handleErrors(response) {
+  if (!response.ok) {
+    console.log(response.statusText);
+  }
+  return response;
+}
+
 const config = {
   setAuthToken: (res) => {
     const token = res.headers.entries().next().value[1];
@@ -60,93 +82,48 @@ const config = {
 };
 
 export const fetchMatches = async () => {
-  const url = role === "company" ? `${baseUrl}/candidates` : `${baseUrl}/labs`;
-
-  const res = await fetch(url, { method: "GET" });
+  const res = await fetch(`${baseUrl}/matches`, {
+    method: "GET",
+    headers: { ...config.headers, ...config.authorization },
+  });
   const json = await res.json();
 
-  return json.map((j) => format(j));
+  return json.map((j) => formatMatch(j));
 };
 
 export const fetchProfile = async (id) => {
   const entity = role === "candidate" ? `labs` : `candidates`;
 
-  const res = await fetch(`${baseUrl}/${entity}/${id}`, { method: "GET" });
+  const res = await fetch(`${baseUrl}/${entity}/${id}`, {
+    method: "GET",
+    headers: { ...config.headers, ...config.authorization },
+  });
   const json = await res.json();
   return format(json);
 };
 
-export const fetchLikes = () => {
-  const data =
-    role === "company"
-      ? format({
-          id: 11,
-          first_name: "John",
-          last_name: "Doe static",
-          email: "user@name.com",
-          phone: "+0 800 000 000",
-          description: "I'm a fancy description!",
-          created_at: "2020-04-17T10:57:25.838Z",
-          updated_at: "2020-04-17T10:57:25.838Z",
-          profile_image: "https://placehold.it/350x450.png",
-          technologies: [
-            {
-              id: 8,
-              name: "IBM RPG",
-              created_at: "2020-04-02T17:58:22.756Z",
-              updated_at: "2020-04-02T17:58:22.756Z",
-            },
+export const fetchLikes = async () => {
+  const entity = role === "company" ? "candidates" : "labs";
 
-            {
-              id: 18,
-              name: "JS",
-              created_at: "2020-04-02T17:58:22.804Z",
-              updated_at: "2020-04-02T17:58:22.804Z",
-            },
-            {
-              id: 19,
-              name: "TeX",
-              created_at: "2020-04-02T17:58:22.808Z",
-              updated_at: "2020-04-02T17:58:22.808Z",
-            },
-          ],
-        })
-      : format({
-          id: 1,
-          name: "Match Labs static",
-          end_date: "2020-06-01",
-          spots: 6,
-          objectives:
-            "Folosind React (o librărie JavaScript pentru construirea interfețelor cu utilizatorii), vom dezvolta o soluție care va ajuta procesul de selecție din cadrul proiectului Liga AC LABS prin conectarea celor mai promițătoare perechi de companii și studenți. Mai exact, platforma va funcționa bazându-se pe un proces de matching ce va lua în calcul input-ul fiecărui utilizator, dar și interese, preferințe și skill-uri. În termeni informali, vom construi un Tinder mai pragmatic și mai util, fără a pierde componenta fun.",
-          selection_details:
-            '1. CV: Clasic sau cu o notă personală, tu decizi sub ce formă ne prezinti skill-urile și motivația care te fac "a perfect match" pentru laboratorul nostru. 2. Test: Brief and to the point, nu-ți vom răpi mult timp (maxim 30 de minute).',
-          requirements:
-            "Suntem aici să învățăm, așa că nu te speria dacă nu bifezi toate cerințele sau nu ești la nivelul la care ți-ai dori. Uite ce-ar trebui să pui pe masă (dar îți venim și noi în ajutor):  1. Știi câte ceva despre HTML/CSS și poți pune în practică conceptele de bază.   2. JavaScript nu-ți este un limbaj de programare complet străin, chiar și doar la nivel teoretic.   3. English, you speak it!",
-          created_at: "2020-04-02T17:44:07.372Z",
-          updated_at: "2020-04-02T18:33:50.481Z",
-          company_id: 1,
-          company: {
-            id: 1,
-            name: "[e-spres-oh]",
-            email: "paulmacinic@gmail.com",
-            phone: "0771466059",
-            website: "https://e-spres-oh.com",
-            description: "Front-end & Back-end Programming Consultancy",
-            created_at: "2020-04-02T17:35:22.182Z",
-            updated_at: "2020-04-02T19:01:54.687Z",
-            profile_image: "https://obscurial.dk/match-labs/eoh-logo.svg",
-          },
-          technologies: [
-            {
-              id: 16,
-              name: "F#",
-              created_at: "2020-04-02T17:58:22.794Z",
-              updated_at: "2020-04-02T17:58:22.794Z",
-            },
-          ],
-        });
+  const res = await fetch(`${baseUrl}/${entity}/likeable`, {
+    method: "GET",
+    headers: { ...config.headers, ...config.authorization },
+  });
 
-  return data;
+  const json = await res.json();
+  return json.map((item) => format(item));
+};
+
+export const fetchAllLikes = async () => {
+  const entity = role === "company" ? "candidates" : "labs";
+
+  const res = await fetch(`${baseUrl}/${entity}`, {
+    method: "GET",
+    headers: { ...config.headers, ...config.authorization },
+  });
+
+  const json = await res.json();
+  return json.map((like) => format(like));
 };
 
 export const register = async (data) => {
@@ -207,20 +184,34 @@ export const me = async (data) => {
   const res = await fetch(`https://match-labs-api.herokuapp.com/api/me`, {
     method: "GET",
     headers: { ...config.authorization, ...config.headers },
-  }).catch((e) => console.log(e));
+  });
+
+  handleErrors(res);
 
   const json = await res.json();
 
   return json.error ? false : formatMe(json);
 };
 
-export const editCandidate = async (data, id) => {
-  const res = await fetch(`https://match-labs-api.herokuapp.com/api/candidates/` + id, {
+export const editAccount = async (id, data) => {
+  const entity = role === "candidate" ? `candidates` : `companies`;
+
+  const res = await fetch(`${baseUrl}/${entity}/${id}`, {
     method: "PUT",
-    headers: { ...config.authorization, ...config.headers },
-    body: JSON.stringify({ candidate: data }),
-  }).catch((e) => console.log(e));
+    headers: { ...config.headers, ...config.authorization },
+    body: JSON.stringify(data),
+  });
 
   const json = await res.json();
   return json;
-}
+};
+
+export const fetchTechnologies = async () => {
+  const res = await fetch(`${baseUrl}/technologies`, {
+    method: "GET",
+    headers: { ...config.headers, ...config.authorization },
+  });
+
+  const json = await res.json();
+  return json;
+};

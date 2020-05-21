@@ -1,31 +1,26 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import CandidateForm from "../components/CandidateForm";
 import PageTitle from "../components/PageTitle";
-import Loader from "../components/Loader";
 import { AppContext } from "../Context";
-import { editCandidate } from "../utils/request";
+import Loader from "../components/Loader";
+import { editAccount } from "../utils/request";
 
 const Account = () => {
-  // 1. Subscribe to AppContext data
-  const appContext = useContext(AppContext);
+  const { user } = useContext(AppContext);
   const [fields, setFields] = useState(null);
-  const user = appContext.user.personal;
 
   useEffect(() => {
-    // 2. Map with object keys and format your data before setting it in state
-    const result = Object.keys(user).map(function(key, index) {
-        return {
-            name: key,
-            value: user[key]
-        }
-      });
-      setFields(result);
-  }, []);
+    const newFields = Object.keys(user.personal).map((key) => ({
+      name: key,
+      value: user.personal[key],
+    }));
+    setFields(newFields);
+  }, [user]);
 
-  const onFormSubmit = (values, id) => {
-    console.log(id);
-    editCandidate(values, id);
+  const onFormSubmit = async (values) => {
+    const { technologies, ...rest } = values;
+    await editAccount(user.id, { [user.role]: rest, technologies });
   };
 
   if (!fields) return <Loader />;
